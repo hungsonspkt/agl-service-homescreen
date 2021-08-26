@@ -1,0 +1,44 @@
+=============================
+How to build
+=============================
+
+cmake
+make
+
+=============================
+Launch Binder
+=============================
+
+file
+/home/root/HomeScreenBinding/src/homescreen-service.so
+/usr/lib/libhomescreen.so
+
+command
+/usr/bin/afb-daemon --ldpaths=/home/root/HomeScreenBinding/src --verbose --port=2000 --token=hs
+
+=============================
+Binding Function List
+=============================
+
+(What can do)
+ - Call required API for HomeScreen
+   * tap_shortcut
+   * on_screen_message
+   * subscribe
+   * unsubscribe
+
+ - Subscribe/Unsubscribe event from HomeScreen
+   * tap_shortcut
+   * on_screen_message
+
+=============================
+libhomescreen Function List
+=============================
+(What can do)
+ - registerCallback
+ - tapShortcut
+ - Call api with json argument
+ - Subscribe event from HomeScreen
+
+(What can't do)
+ - Call api as function
