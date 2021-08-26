@@ -154,7 +154,7 @@ void printserial()
     fdUSB = 0x00;
 }
 
-void* doSomeThing(void *arg)
+void* doSomeThing()
 {
     usleep(10000000);//10s
     
