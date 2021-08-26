@@ -153,9 +153,10 @@ void printserial()
     close(fdUSB);
     fdUSB = 0x00;
 }
-
-void* doSomeThing()
+#define UNUSED(x) (void)(x)
+void* doSomeThing(void *arg)
 {
+    UNUSED(arg);
     usleep(10000000);//10s
     
     while(1)
