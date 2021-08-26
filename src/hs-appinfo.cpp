@@ -148,7 +148,12 @@ void printserial()
     }
     if(fdUSB != 0x00)
     {
-        write (fdUSB, "K-Auto hello!\n", strlen("K-Auto hello!\n")); 
+        if(write (fdUSB, "K-Auto hello!\n", strlen("K-Auto hello!\n")) < 0x00)
+        {
+            close(fdUSB);
+            fdUSB = 0x00;
+            return;
+        }
     }
     close(fdUSB);
     fdUSB = 0x00;
