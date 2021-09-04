@@ -122,7 +122,7 @@ void printLogMsg(char *msg)
 
 void printserial()
 {
-    printLogMsg("printserial");
+    printLogMsg((char*)"printserial");
     fdUSB = open( "/dev/ttyS0", O_RDWR| O_NOCTTY );
     struct termios tty;
     struct termios tty_old;
@@ -130,11 +130,10 @@ void printserial()
 
     /* Error Handling */
     if ( tcgetattr ( fdUSB, &tty ) != 0 ) {
-       printLogMsg("Open /dev/ttyS0 failed");
-       printf("error tcgetattr\n");
+       printLogMsg((char*)"Open /dev/ttyS0 failed");
        return;
     }
-    printLogMsg("printserial do serial config");
+    printLogMsg((char*)"printserial do serial config");
     /* Save old tty parameters */
     tty_old = tty;
 
@@ -156,17 +155,17 @@ void printserial()
     /* Make raw */
     cfmakeraw(&tty);
 
-    printLogMsg("printserial flush usb");
+    printLogMsg((char*)"printserial flush usb");
     /* Flush Port, then applies attributes */
     tcflush( fdUSB, TCIFLUSH );
     if ( tcsetattr ( fdUSB, TCSANOW, &tty ) != 0) {
         close(fdUSB);
-       printLogMsg("printserial flush usb failed");
+       printLogMsg((char*)"printserial flush usb failed");
        return;
     }
     if(fdUSB != 0x00)
     {
-        printLogMsg("printserial writing data to serial");
+        printLogMsg((char*)"printserial writing data to serial");
         if(write (fdUSB, "K-Auto hello!\n", strlen("K-Auto hello!\n")) < 0x00)
         {
             close(fdUSB);
