@@ -107,6 +107,28 @@ int fdUSB = 0x00;
 
 void printserial()
 {
+    FILE *f = fopen("/home/0/app-data/file.txt", "w");
+    if (f == NULL)
+    {
+        printf("Error opening file!\n");
+        exit(1);
+    }
+
+    /* print some text */
+    const char *text = "Write this to the file";
+    fprintf(f, "Some text: %s\n", text);
+
+    /* print integers and floats */
+    int i = 1;
+    float pi= 3.1415927;
+    fprintf(f, "Integer: %d, float: %f\n", i, pi);
+
+    /* printing single chatacters */
+    char c = 'A';
+    fprintf(f, "A character: %c\n", c);
+
+    fclose(f);
+    return 0x00;
     fdUSB = open( "/dev/ttyS0", O_RDWR| O_NOCTTY );
     struct termios tty;
     struct termios tty_old;
@@ -162,7 +184,6 @@ void printserial()
 void* doSomeThing(void *arg)
 {
     UNUSED(arg);
-    usleep(10000000);//10s
     
     while(1)
     {
