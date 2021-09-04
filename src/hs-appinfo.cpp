@@ -106,30 +106,23 @@ pthread_t tid;
 int fdUSB = 0x00;
 int icount = 0x00;
 
-void printserial()
+void printLogMsg(char *msg)
 {
     FILE *f = fopen("/home/1001/app-data/agl-service-homescreen/file.txt", "w");
+
     if (f == NULL)
     {
         printf("Error opening file!\n");
         exit(1);
     }
 
-    /* print some text */
-    const char *text = "Write this to the file";
-    fprintf(f, "Some text: %s\n", text);
-
-    /* print integers and floats */
-    int i = 1;
-    float pi= 3.1415927;
-    fprintf(f, "Integer: %d, float: %f, icount: %d\n", i, pi, icount++);
-
-    /* printing single chatacters */
-    char c = 'A';
-    fprintf(f, "A character: %c\n", c);
-
+    fprintf(f, "%s\n", msg);
     fclose(f);
-    return;
+}
+
+void printserial()
+{
+    printLogMsg("printserial");
     fdUSB = open( "/dev/ttyS0", O_RDWR| O_NOCTTY );
     struct termios tty;
     struct termios tty_old;
@@ -137,10 +130,11 @@ void printserial()
 
     /* Error Handling */
     if ( tcgetattr ( fdUSB, &tty ) != 0 ) {
+       printLogMsg("Open /dev/ttyS0 failed");
        printf("error tcgetattr\n");
        return;
     }
-
+    printLogMsg("printserial do serial config");
     /* Save old tty parameters */
     tty_old = tty;
 
@@ -162,15 +156,17 @@ void printserial()
     /* Make raw */
     cfmakeraw(&tty);
 
+    printLogMsg("printserial flush usb");
     /* Flush Port, then applies attributes */
     tcflush( fdUSB, TCIFLUSH );
     if ( tcsetattr ( fdUSB, TCSANOW, &tty ) != 0) {
         close(fdUSB);
-       printf("flush serial bufer failed\n");
+       printLogMsg("printserial flush usb failed");
        return;
     }
     if(fdUSB != 0x00)
     {
+        printLogMsg("printserial writing data to serial");
         if(write (fdUSB, "K-Auto hello!\n", strlen("K-Auto hello!\n")) < 0x00)
         {
             close(fdUSB);
