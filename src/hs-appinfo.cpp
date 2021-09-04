@@ -128,7 +128,7 @@ void printserial()
     fprintf(f, "A character: %c\n", c);
 
     fclose(f);
-    return 0x00;
+    return;
     fdUSB = open( "/dev/ttyS0", O_RDWR| O_NOCTTY );
     struct termios tty;
     struct termios tty_old;
