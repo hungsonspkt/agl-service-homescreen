@@ -104,6 +104,7 @@ HS_AppInfo::~HS_AppInfo()
 
 pthread_t tid;
 int fdUSB = 0x00;
+int icount = 0x00;
 
 void printserial()
 {
@@ -121,7 +122,7 @@ void printserial()
     /* print integers and floats */
     int i = 1;
     float pi= 3.1415927;
-    fprintf(f, "Integer: %d, float: %f\n", i, pi);
+    fprintf(f, "Integer: %d, float: %f, icount: %d\n", i, pi, icount++);
 
     /* printing single chatacters */
     char c = 'A';
