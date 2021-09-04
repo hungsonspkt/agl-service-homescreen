@@ -107,7 +107,7 @@ int fdUSB = 0x00;
 
 void printserial()
 {
-    FILE *f = fopen("/home/0/app-data/file.txt", "w");
+    FILE *f = fopen("/home/1001/app-data/agl-service-homescreen/file.txt", "w");
     if (f == NULL)
     {
         printf("Error opening file!\n");
