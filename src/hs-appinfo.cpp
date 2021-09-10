@@ -140,7 +140,7 @@ void printserial()
 
     /* Error Handling */
     if ( tcgetattr ( fdUSB, &tty ) != 0 ) {
-       printLogMsg((char*)"Open /dev/ttyS0 failed, fdUSB: %d", fdUSB);
+       //printLogMsg((char*)"Open /dev/ttyS0 failed, fdUSB: %d", fdUSB);
        return;
     }
     printLogMsg((char*)"printserial do serial config");
