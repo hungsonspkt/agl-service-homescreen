@@ -216,7 +216,10 @@ void* doSomeThing(void *arg)
         
         ticks = time(NULL);
         snprintf(sendBuff, sizeof(sendBuff), "K-Auto %.24s\r\n", ctime(&ticks));
-        write(connfd, sendBuff, strlen(sendBuff)); 
+        if(write(connfd, sendBuff, strlen(sendBuff)) < 0x00)
+        {
+            printLogMsg((char*)"write socket error\n\r");
+        }
         usleep(1000000);//1s
     }
     close(connfd);
