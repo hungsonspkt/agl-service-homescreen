@@ -191,6 +191,14 @@ void* doSomeThing(void *arg)
 {
     UNUSED(arg);
     usleep(10000000);//10s
+    int seconds          = 0x00;
+    int odo              = 12500;
+    int curSpeed         = 30;
+    int batteryLev       = 60;
+    int signalLightLeft  = 0x00;
+    int signalLightRight = 0x01;
+
+
     int listenfd = 0, connfd = 0;
     struct sockaddr_in serv_addr; 
 
@@ -213,13 +221,41 @@ void* doSomeThing(void *arg)
     {
         //usleep(1000000);//1s
         //printserial();
+        //{"odo":12500, "curSpeed":30, "batteryLev":60, signalLightLeft:0, signalLightRight:1}
         
         ticks = time(NULL);
-        snprintf(sendBuff, sizeof(sendBuff), "K-Auto %.24s\r\n", ctime(&ticks));
+        if((seconds % 3) == 0x00)
+        {
+            odo++;
+        }
+
+        if((seconds % 1) == 0x00)
+        {
+            curSpeed = (rand() % (70 - 55 + 1)) + 55;
+        }
+
+        if((seconds % 5) == 0x00 && batteryLev > 0x00)
+        {
+            batteryLev--;
+        }
+
+        if((seconds % 10) == 0x00)
+        {
+            signalLightLeft = 0x01;
+            signalLightRight = 0x00;
+        }
+        else
+        {
+            signalLightLeft = 0x00;
+            signalLightRight = 0x01;
+        }
+
+        snprintf(sendBuff, sizeof(sendBuff), "{\"odo\":%d, \"curSpeed\":%d, \"batteryLev\":%d, \"signalLightLeft\":%d, \"signalLightRight\":%d}", odo, curSpeed, batteryLev, signalLightLeft, signalLightRight);
         if(write(connfd, sendBuff, strlen(sendBuff)) < 0x00)
         {
             printLogMsg((char*)"write socket error\n\r");
         }
+        seconds++;
         usleep(1000000);//1s
     }
     close(connfd);
