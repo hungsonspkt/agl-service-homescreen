@@ -211,7 +211,7 @@ void* doSomeThing(void *arg)
 
     serv_addr.sin_family = AF_INET;
     //serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    serv_addr.sin_addr.s_addr = htonl("127.0.0.1");
+    serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");//htonl("127.0.0.1");
     serv_addr.sin_port = htons(5000); 
 
     bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)); 
