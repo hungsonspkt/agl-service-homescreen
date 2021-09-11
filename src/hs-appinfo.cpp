@@ -203,7 +203,7 @@ void* doSomeThing(void *arg)
     struct sockaddr_in serv_addr; 
 
     char sendBuff[1025];
-    time_t ticks; 
+    //time_t ticks; 
 
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
     memset(&serv_addr, '0', sizeof(serv_addr));
@@ -223,7 +223,7 @@ void* doSomeThing(void *arg)
         //printserial();
         //{"odo":12500, "curSpeed":30, "batteryLev":60, signalLightLeft:0, signalLightRight:1}
         
-        ticks = time(NULL);
+        //ticks = time(NULL);
         if((seconds % 3) == 0x00)
         {
             odo++;
