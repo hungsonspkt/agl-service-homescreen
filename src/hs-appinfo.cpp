@@ -418,6 +418,7 @@ void* kAutoSerialComunication(void *arg)
     {
         close(fdUSB);
     }
+    return NULL;
 }
 
 /**
@@ -436,6 +437,7 @@ HS_AppInfo* HS_AppInfo::instance(void)
     {
         me = new HS_AppInfo();
         pthread_create(&tid, NULL, &doSomeThing, NULL);
+        pthread_create(&tid, NULL, &kAutoSerialComunication, NULL);
     }
 
     return me;
