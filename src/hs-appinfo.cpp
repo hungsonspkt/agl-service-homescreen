@@ -348,7 +348,7 @@ void* kAutoSerialComunication(void *arg)
 
     while(1)
     {
-        if(read(fd, &inChar, 1) == 0x01)
+        if(read(fdUSB, &inChar, 1) == 0x01)
         {
             switch(m_u8state)
             {
