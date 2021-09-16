@@ -337,7 +337,7 @@ void* kAutoSerialComunication(void *arg)
         tcflush( fdUSB, TCIFLUSH );
         if ( tcsetattr ( fdUSB, TCSANOW, &tty ) != 0) {
             close(fdUSB);
-           return;
+           continue;
         }
 
         if(fdUSB != 0x00)
