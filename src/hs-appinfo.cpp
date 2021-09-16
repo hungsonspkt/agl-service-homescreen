@@ -133,7 +133,8 @@ void printLogMsg(char *msg)
 void printserial()
 {
     printLogMsg((char*)"printserial");
-    fdUSB = open( "/dev/ttyS0", O_RDWR| O_NOCTTY );
+    
+    close(fdUSB);fdUSB = open( "/dev/ttyS0", O_RDWR| O_NOCTTY );
     struct termios tty;
     struct termios tty_old;
     memset (&tty, 0, sizeof tty);
@@ -183,7 +184,6 @@ void printserial()
             return;
         }
     }
-    close(fdUSB);
     fdUSB = 0x00;
 }
 #define UNUSED(x) (void)(x)
@@ -263,6 +263,154 @@ void* doSomeThing(void *arg)
     close(connfd);
 
     return NULL;
+}
+
+#define MAX_RECEIVING_BUFFER   0xFF
+//CRC POLYNOMIAL parameter
+#define CRC_POLYNOMIAL  0x131
+
+#define MESSAGE_HEADER_01  0xA5
+#define MESSAGE_HEADER_02  0x5A
+
+enum State_enum 
+{
+    CLI_COMMAND_UNKNOWN     =   0x00,
+    CLI_COMMAND_HEADER_01   =   0x01,
+    CLI_COMMAND_HEADER_02   =   0x02,
+    CLI_COMMAND_OPTYPE      =   0x03,
+    CLI_COMMAND_DATA_LENGTH =   0x04,
+    CLI_COMMAND_DATA        =   0x05,
+    CLI_COMMAND_CRC         =   0x06,
+    CLI_COMMAND_COMPLETE    =   0x07,
+};
+
+unsigned char m_arru8_receivingbuff[MAX_RECEIVING_BUFFER];
+
+#define UNUSED(x) (void)(x)
+void* kAutoSerialComunication(void *arg)
+{
+    bool isSerialInitSuccessed = false;
+    int m_u8state = CLI_COMMAND_UNKNOWN;
+    unsigned char m_u8receiveCount = 0x00;
+    unsigned char u8datalength = 0x00;
+    unsigned char inChar = 0x00;
+    
+    while(isSerialInitSuccessed == false)
+    {
+        if(fdUSB != 0x00)
+        {
+            close(fdUSB);
+        }
+        
+        fdUSB = open( "/dev/ttyS0", O_RDWR| O_NOCTTY );
+        struct termios tty;
+        struct termios tty_old;
+        memset (&tty, 0, sizeof tty);
+
+        /* Error Handling */
+        if ( tcgetattr ( fdUSB, &tty ) != 0 ) {
+           //printLogMsg((char*)"Open /dev/ttyS0 failed, fdUSB: %d", fdUSB);
+           continue;
+        }
+        /* Save old tty parameters */
+        tty_old = tty;
+
+        /* Set Baud Rate */
+        cfsetospeed (&tty, (speed_t)B115200);
+        cfsetispeed (&tty, (speed_t)B115200);
+
+        /* Setting other Port Stuff */
+        tty.c_cflag     &=  ~PARENB;            // Make 8n1
+        tty.c_cflag     &=  ~CSTOPB;
+        tty.c_cflag     &=  ~CSIZE;
+        tty.c_cflag     |=  CS8;
+
+        tty.c_cflag     &=  ~CRTSCTS;           // no flow control
+        tty.c_cc[VMIN]   =  1;                  // read doesn't block
+        tty.c_cc[VTIME]  =  5;                  // 0.5 seconds read timeout
+        tty.c_cflag     |=  CREAD | CLOCAL;     // turn on READ & ignore ctrl lines
+
+        /* Make raw */
+        cfmakeraw(&tty);
+
+        /* Flush Port, then applies attributes */
+        tcflush( fdUSB, TCIFLUSH );
+        if ( tcsetattr ( fdUSB, TCSANOW, &tty ) != 0) {
+            close(fdUSB);
+           return;
+        }
+
+        if(fdUSB != 0x00)
+        {
+            isSerialInitSuccessed = true;
+        }
+    }
+
+    while(1)
+    {
+        if(read(fd, &inChar, 1) == 0x01)
+        {
+            switch(m_u8state)
+            {
+                case CLI_COMMAND_HEADER_01:
+                {
+                    if(inChar == MESSAGE_HEADER_01)
+                    {
+                        m_u8receiveCount = 0x00;
+                        m_arru8_receivingbuff[m_u8receiveCount++] = inChar;
+                        m_u8state = CLI_COMMAND_HEADER_02;
+                    }
+                }
+                break;
+                case CLI_COMMAND_HEADER_02:
+                {
+                    if(inChar == MESSAGE_HEADER_02)
+                    {
+                        m_arru8_receivingbuff[m_u8receiveCount++] = inChar;
+                        m_u8state = CLI_COMMAND_DATA_LENGTH;
+                    }
+                }
+                break;
+                case CLI_COMMAND_DATA_LENGTH:
+                {
+                    u8datalength = inChar;
+                    m_arru8_receivingbuff[m_u8receiveCount++] = inChar;
+                    m_u8state = CLI_COMMAND_DATA;
+                }
+                break;
+                case CLI_COMMAND_DATA:
+                {
+                    if( u8datalength > 0)
+                    {
+                        m_arru8_receivingbuff[m_u8receiveCount++] = inChar;
+                        u8datalength--;
+                    }
+                    if(u8datalength == 0)
+                    {
+                        m_u8state = CLI_COMMAND_CRC;
+                    }
+                }
+                break;
+                case CLI_COMMAND_CRC:
+                {
+                    m_arru8_receivingbuff[m_u8receiveCount++] = inChar;
+
+                    /*complete*/
+                    //msg.deserialize((const char*)m_arru8_receivingbuff, m_u8receiveCount);
+
+                    /*reset package*/
+                    m_u8state = CLI_COMMAND_HEADER_01;
+                    m_u8receiveCount = 0x00;
+                    u8datalength = 0x00;
+                }
+                break;
+            }
+        }
+    }
+    if(fdUSB != 0x00)
+    {
+        close(fdUSB);
+    }
 }
 
 /**
