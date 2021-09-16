@@ -118,7 +118,7 @@ int icount = 0x00;
 
 void printLogMsg(char *msg)
 {
-    FILE *f = fopen("/home/1001/app-data/agl-service-homescreen/file.txt", "w");
+    FILE *f = fopen("/home/1001/app-data/agl-service-homescreen/file.txt", "a");
 
     if (f == NULL)
     {
@@ -132,6 +132,7 @@ void printLogMsg(char *msg)
 
 void printserial()
 {
+    return;
     printLogMsg((char*)"printserial");
     
     close(fdUSB);fdUSB = open( "/dev/ttyS0", O_RDWR| O_NOCTTY );
