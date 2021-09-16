@@ -289,6 +289,7 @@ unsigned char m_arru8_receivingbuff[MAX_RECEIVING_BUFFER];
 #define UNUSED(x) (void)(x)
 void* kAutoSerialComunication(void *arg)
 {
+    UNUSED(arg);
     bool isSerialInitSuccessed = false;
     int m_u8state = CLI_COMMAND_UNKNOWN;
     unsigned char m_u8receiveCount = 0x00;
