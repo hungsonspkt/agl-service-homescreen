@@ -360,6 +360,7 @@ void* kAutoSerialComunication(void *arg)
                         m_u8receiveCount = 0x00;
                         m_arru8_receivingbuff[m_u8receiveCount++] = inChar;
                         m_u8state = CLI_COMMAND_HEADER_02;
+                        printLogMsg((char*)"Receive header 1\n\r");
                     }
                 }
                 break;
@@ -369,6 +370,7 @@ void* kAutoSerialComunication(void *arg)
                     {
                         m_arru8_receivingbuff[m_u8receiveCount++] = inChar;
                         m_u8state = CLI_COMMAND_DATA_LENGTH;
+                        printLogMsg((char*)"Receive header 2\n\r");
                     }
                 }
                 break;
@@ -377,6 +379,7 @@ void* kAutoSerialComunication(void *arg)
                     u8datalength = inChar;
                     m_arru8_receivingbuff[m_u8receiveCount++] = inChar;
                     m_u8state = CLI_COMMAND_DATA;
+                    printLogMsg((char*)"Receive data length\n\r");
                 }
                 break;
                 case CLI_COMMAND_DATA:
@@ -385,10 +388,12 @@ void* kAutoSerialComunication(void *arg)
                     {
                         m_arru8_receivingbuff[m_u8receiveCount++] = inChar;
                         u8datalength--;
+                        printLogMsg((char*)"Receive data ..\n\r");
                     }
                     if(u8datalength == 0)
                     {
                         m_u8state = CLI_COMMAND_CRC;
+                        printLogMsg((char*)"Receive data complete, switch to CRC\n\r");
                     }
                 }
                 break;
@@ -403,6 +408,7 @@ void* kAutoSerialComunication(void *arg)
                     m_u8state = CLI_COMMAND_HEADER_01;
                     m_u8receiveCount = 0x00;
                     u8datalength = 0x00;
+                    printLogMsg((char*)"Receive CRC, message complete\n\r");
                 }
                 break;
             }
