@@ -295,7 +295,7 @@ void* kAutoSerialComunication(void *arg)
     int m_u8state = CLI_COMMAND_UNKNOWN;
     unsigned char m_u8receiveCount = 0x00;
     unsigned char u8datalength = 0x00;
-    unsigned char inChar = 0x00;
+    static char inChar = 0x00;
     
     while(isSerialInitSuccessed == false)
     {
@@ -328,7 +328,7 @@ void* kAutoSerialComunication(void *arg)
         tty.c_cflag     |=  CS8;
 
         tty.c_cflag     &=  ~CRTSCTS;           // no flow control
-        //tty.c_cc[VMIN]   =  1;                  // read doesn't block
+        tty.c_cc[VMIN]   =  1;                  // read doesn't block
         tty.c_cc[VTIME]  =  5;                  // 0.5 seconds read timeout
         tty.c_cflag     |=  CREAD | CLOCAL;     // turn on READ & ignore ctrl lines
 
