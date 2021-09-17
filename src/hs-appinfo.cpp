@@ -314,7 +314,7 @@ void* kAutoSerialComunication(void *arg)
            //printLogMsg((char*)"Open /dev/ttyS0 failed, fdUSB: %d", fdUSB);
            continue;
         }
-        int result = tcflush(fdUSB, TCIOFLUSH);
+        tcflush(fdUSB, TCIOFLUSH);
         /* Save old tty parameters */
         tty_old = tty;
 #if 0
