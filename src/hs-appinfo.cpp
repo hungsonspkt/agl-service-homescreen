@@ -347,12 +347,12 @@ void* kAutoSerialComunication(void *arg)
             isSerialInitSuccessed = true;
         }
     }
-    unsigned char msgBuffer[0xFF];
+    char msgBuffer[0xFF];
     while(1)
     {
         if(read(fdUSB, &inChar, 1) == 0x01)
         {
-            sprintf(msgBuffer, "received: %c\n\r", inChar);
+            sprintf((char*)msgBuffer, "received: %c\n\r", inChar);
             printLogMsg((char*)msgBuffer);
             switch(m_u8state)
             {
