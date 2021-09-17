@@ -314,12 +314,12 @@ void* kAutoSerialComunication(void *arg)
            //printLogMsg((char*)"Open /dev/ttyS0 failed, fdUSB: %d", fdUSB);
            continue;
         }
+        int result = tcflush(fdUSB, TCIOFLUSH);
         /* Save old tty parameters */
         tty_old = tty;
-
+#if 0
         /* Set Baud Rate */
         cfsetospeed (&tty, (speed_t)B115200);
-        cfsetispeed (&tty, (speed_t)B115200);
 
         /* Setting other Port Stuff */
         tty.c_cflag     &=  ~PARENB;            // Make 8n1
@@ -328,13 +328,26 @@ void* kAutoSerialComunication(void *arg)
         tty.c_cflag     |=  CS8;
 
         tty.c_cflag     &=  ~CRTSCTS;           // no flow control
-        tty.c_cc[VMIN]   =  1;                  // read doesn't block
-        tty.c_cc[VTIME]  =  5;                  // 0.5 seconds read timeout
-        tty.c_cflag     |=  CREAD | CLOCAL;     // turn on READ & ignore ctrl lines
+        //tty.c_cc[VMIN]   =  1;                  // read doesn't block
+        //tty.c_cc[VTIME]  =  5;                  // 0.5 seconds read timeout
+        tty.c_cflag     |=  CREAD;//tty.c_cflag     |=  CREAD | CLOCAL;     // turn on READ & ignore ctrl lines
 
         /* Make raw */
         cfmakeraw(&tty);
+#endif
+        // Turn off any options that might interfere with our ability to send and
+          // receive raw binary bytes.
+        tty.c_iflag &= ~(INLCR | IGNCR | ICRNL | IXON | IXOFF);
+        tty.c_oflag &= ~(ONLCR | OCRNL);
+        tty.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
 
+        // Set up timeouts: Calls to read() will return as soon as there is
+        // at least one byte available or when 100 ms has passed.
+        tty.c_cc[VTIME] = 1;
+        tty.c_cc[VMIN] = 0;
+
+        cfsetospeed(&tty, B115200);
+        cfsetispeed(&tty, cfgetospeed(&tty));
         /* Flush Port, then applies attributes */
         tcflush( fdUSB, TCIFLUSH );
         if ( tcsetattr ( fdUSB, TCSANOW, &tty ) != 0) {
