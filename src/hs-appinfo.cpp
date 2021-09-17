@@ -367,7 +367,7 @@ void* kAutoSerialComunication(void *arg)
         if(read(fdUSB, &inChar, 1) > 0x00)
         {
             memset(msgBuffer, 0x00, 0xFF);
-            sprintf((char*)msgBuffer, "received: %d, m_u8state: %d\n\r", inChar, m_u8state);
+            sprintf((char*)msgBuffer, "Data received: %d, m_u8state: %d\n\r", inChar, m_u8state);
             printLogMsg((char*)msgBuffer);
             switch(m_u8state)
             {
