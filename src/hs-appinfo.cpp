@@ -416,6 +416,7 @@ void* kAutoSerialComunication(void *arg)
                 break;
             }
         }
+        usleep(10000);//delay for 10 milisecond
     }
     if(fdUSB != 0x00)
     {
