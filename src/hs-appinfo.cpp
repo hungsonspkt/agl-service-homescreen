@@ -348,6 +348,7 @@ void* kAutoSerialComunication(void *arg)
         }
     }
     char msgBuffer[0xFF];
+    m_u8state = CLI_COMMAND_HEADER_01;
     while(1)
     {
         if(read(fdUSB, &inChar, 1) == 0x01)
