@@ -112,9 +112,31 @@ HS_AppInfo::~HS_AppInfo()
         delete afmmain;
 }
 
+typedef struct 
+{
+    unsigned char msgRcv[0xFF];
+    unsigned char iCount;
+    unsigned char isValid;
+}SERIAL_DATA_QUEUE;
+
+pthread_mutex_t mutexsync;
 pthread_t tid;
 int fdUSB = 0x00;
 int icount = 0x00;
+SERIAL_DATA_QUEUE g_serial_rcv;
+
+void setSerialRcv(unsigned char *buffer, int icound)
+{
+    pthread_mutex_lock (&mutexsum);
+    int idx = 0x00;
+    g_serial_rcv.iCount = icound;
+    for(idx = 0x00; idx < icound; idx++)
+    {
+        g_serial_rcv.msgRcv[idx] = buffer[idx];
+    }
+    g_serial_rcv.isValid = 0x20;
+    pthread_mutex_unlock (&mutexsum);
+}
 
 void printLogMsg(char *msg)
 {
@@ -227,6 +249,7 @@ void* doSomeThing(void *arg)
         //{"odo":12500, "curSpeed":30, "batteryLev":60, signalLightLeft:0, signalLightRight:1}
         
         //ticks = time(NULL);
+        #if 0
         if((seconds % 3) == 0x00)
         {
             odo++;
@@ -259,6 +282,18 @@ void* doSomeThing(void *arg)
             printLogMsg((char*)"write socket error\n\r");
         }
         seconds++;
+        #endif
+        pthread_mutex_lock (&mutexsum);
+        if(g_serial_rcv.isValid == 0x20)
+        {
+            g_serial_rcv.isValid = 0x00;
+            snprintf(sendBuff, sizeof(sendBuff), "{\"odo\":%d, \"curSpeed\":%d, \"batteryLev\":%d, \"signalLightLeft\":%d, \"signalLightRight\":%d}", g_serial_rcv.msgRcv[3], g_serial_rcv.msgRcv[4], g_serial_rcv.msgRcv[5], g_serial_rcv.msgRcv[6], g_serial_rcv.msgRcv[7]);
+            if(write(connfd, sendBuff, strlen(sendBuff)) < 0x00)
+            {
+                printLogMsg((char*)"write socket error\n\r");
+            }
+        }
+        pthread_mutex_unlock (&mutexsum);
         usleep(1000000);//1s
     }
     close(connfd);
@@ -426,6 +461,7 @@ void* kAutoSerialComunication(void *arg)
                     m_u8state = CLI_COMMAND_HEADER_01;
                     m_u8receiveCount = 0x00;
                     u8datalength = 0x00;
+                    setSerialRcv((unsigned char *)m_arru8_receivingbuff, m_u8receiveCount);
                     printLogMsg((char*)"Receive CRC, message complete\n\r");
                 }
                 break;
@@ -455,6 +491,7 @@ HS_AppInfo* HS_AppInfo::instance(void)
     if(me == nullptr)
     {
         me = new HS_AppInfo();
+        pthread_mutex_init(&mutexsum, NULL);
         pthread_create(&tid, NULL, &doSomeThing, NULL);
         pthread_create(&tid, NULL, &kAutoSerialComunication, NULL);
     }
