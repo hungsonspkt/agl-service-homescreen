@@ -457,12 +457,11 @@ void* kAutoSerialComunication(void *arg)
 
                     /*complete*/
                     //msg.deserialize((const char*)m_arru8_receivingbuff, m_u8receiveCount);
-
+                    setSerialRcv((unsigned char *)m_arru8_receivingbuff, m_u8receiveCount);
                     /*reset package*/
                     m_u8state = CLI_COMMAND_HEADER_01;
                     m_u8receiveCount = 0x00;
                     u8datalength = 0x00;
-                    setSerialRcv((unsigned char *)m_arru8_receivingbuff, m_u8receiveCount);
                     printLogMsg((char*)"Receive CRC, message complete\n\r");
                 }
                 break;
