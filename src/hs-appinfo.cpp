@@ -126,6 +126,20 @@ int fdUSB = 0x00;
 int icount = 0x00;
 SERIAL_DATA_QUEUE g_serial_rcv;
 
+void printLogMsg(char *msg)
+{
+    FILE *f = fopen("/home/1001/app-data/agl-service-homescreen/file.txt", "a");
+
+    if (f == NULL)
+    {
+        printf("Error opening file!\n");
+        exit(1);
+    }
+
+    fprintf(f, "%s\n", msg);
+    fclose(f);
+}
+
 void setSerialRcv(unsigned char *buffer, int icound)
 {
     pthread_mutex_lock (&mutexsync);
@@ -151,20 +165,6 @@ void sendHeartBeat()
             }
         }
         pthread_mutex_unlock (&mutexSerialSync);
-}
-
-void printLogMsg(char *msg)
-{
-    FILE *f = fopen("/home/1001/app-data/agl-service-homescreen/file.txt", "a");
-
-    if (f == NULL)
-    {
-        printf("Error opening file!\n");
-        exit(1);
-    }
-
-    fprintf(f, "%s\n", msg);
-    fclose(f);
 }
 
 void printserial()
