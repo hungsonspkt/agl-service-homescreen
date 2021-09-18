@@ -145,7 +145,10 @@ void sendHeartBeat()
         if(fdUSB != 0x00)
         {
             char syncByte = 0xA5;
-            write (fdUSB, &syncByte, 1);
+            if(write (fdUSB, &syncByte, 1) < 0x00)
+            {
+                printLogMsg((char*)"sendHeartBeat, write socket error\n\r");
+            }
         }
         pthread_mutex_unlock (&mutexSerialSync);
 }
