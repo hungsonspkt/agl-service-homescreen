@@ -349,6 +349,7 @@ void* kAutoSerialComunication(void *arg)
     unsigned char u8datalength = 0x00;
     static char inChar = 0x00;
     
+    pthread_mutex_lock (&mutexSerialSync);
     while(isSerialInitSuccessed == false)
     {
         if(fdUSB != 0x00)
@@ -412,7 +413,7 @@ void* kAutoSerialComunication(void *arg)
             isSerialInitSuccessed = true;
         }
     }
-    
+    pthread_mutex_unlock (&mutexSerialSync);
     m_u8state = CLI_COMMAND_HEADER_01;
     while(1)
     {
