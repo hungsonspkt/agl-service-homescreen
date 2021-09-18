@@ -127,7 +127,7 @@ SERIAL_DATA_QUEUE g_serial_rcv;
 
 void setSerialRcv(unsigned char *buffer, int icound)
 {
-    pthread_mutex_lock (&mutexsum);
+    pthread_mutex_lock (&mutexsync);
     int idx = 0x00;
     g_serial_rcv.iCount = icound;
     for(idx = 0x00; idx < icound; idx++)
@@ -135,7 +135,7 @@ void setSerialRcv(unsigned char *buffer, int icound)
         g_serial_rcv.msgRcv[idx] = buffer[idx];
     }
     g_serial_rcv.isValid = 0x20;
-    pthread_mutex_unlock (&mutexsum);
+    pthread_mutex_unlock (&mutexsync);
 }
 
 void printLogMsg(char *msg)
@@ -214,6 +214,7 @@ void* doSomeThing(void *arg)
 {
     UNUSED(arg);
     usleep(10000000);//10s
+    #if 0
     int seconds          = 0x00;
     int odo              = 12500;
     int curSpeed         = 30;
@@ -221,7 +222,7 @@ void* doSomeThing(void *arg)
     int signalLightLeft  = 0x00;
     int signalLightRight = 0x01;
 
-
+#endif
     int listenfd = 0, connfd = 0;
     struct sockaddr_in serv_addr; 
 
@@ -283,7 +284,7 @@ void* doSomeThing(void *arg)
         }
         seconds++;
         #endif
-        pthread_mutex_lock (&mutexsum);
+        pthread_mutex_lock (&mutexsync);
         if(g_serial_rcv.isValid == 0x20)
         {
             g_serial_rcv.isValid = 0x00;
@@ -293,7 +294,7 @@ void* doSomeThing(void *arg)
                 printLogMsg((char*)"write socket error\n\r");
             }
         }
-        pthread_mutex_unlock (&mutexsum);
+        pthread_mutex_unlock (&mutexsync);
         usleep(1000000);//1s
     }
     close(connfd);
@@ -491,7 +492,7 @@ HS_AppInfo* HS_AppInfo::instance(void)
     if(me == nullptr)
     {
         me = new HS_AppInfo();
-        pthread_mutex_init(&mutexsum, NULL);
+        pthread_mutex_init(&mutexsync, NULL);
         pthread_create(&tid, NULL, &doSomeThing, NULL);
         pthread_create(&tid, NULL, &kAutoSerialComunication, NULL);
     }
