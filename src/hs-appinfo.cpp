@@ -369,7 +369,7 @@ void* kAutoSerialComunication(void *arg)
         tcflush(fdUSB, TCIOFLUSH);
         /* Save old tty parameters */
         tty_old = tty;
-#if 0
+#if 1
         /* Set Baud Rate */
         cfsetospeed (&tty, (speed_t)B115200);
 
@@ -380,13 +380,15 @@ void* kAutoSerialComunication(void *arg)
         tty.c_cflag     |=  CS8;
 
         tty.c_cflag     &=  ~CRTSCTS;           // no flow control
-        //tty.c_cc[VMIN]   =  1;                  // read doesn't block
-        //tty.c_cc[VTIME]  =  5;                  // 0.5 seconds read timeout
-        tty.c_cflag     |=  CREAD;//tty.c_cflag     |=  CREAD | CLOCAL;     // turn on READ & ignore ctrl lines
+        tty.c_cc[VMIN]   =  1;                  // read doesn't block
+        tty.c_cc[VTIME]  =  5;                  // 0.5 seconds read timeout
+        tty.c_cflag     |=  CREAD | CLOCAL;     // turn on READ & ignore ctrl lines
 
         /* Make raw */
         cfmakeraw(&tty);
 #endif
+#if 0
+    cfsetospeed(&tty, B115200);
         // Turn off any options that might interfere with our ability to send and
           // receive raw binary bytes.
         tty.c_iflag &= ~(INLCR | IGNCR | ICRNL | IXON | IXOFF);
@@ -406,8 +408,9 @@ void* kAutoSerialComunication(void *arg)
         // at least one byte available or when 100 ms has passed.
         tty.c_cc[VTIME] = 1;
         tty.c_cc[VMIN] = 0;
+#endif
 
-        cfsetospeed(&tty, B115200);
+        //cfsetospeed(&tty, B115200);cfsetospeed(&tty, B115200);
         cfsetispeed(&tty, cfgetospeed(&tty));
         /* Flush Port, then applies attributes */
         tcflush( fdUSB, TCIFLUSH );
