@@ -163,6 +163,7 @@ void sendHeartBeat()
             {
                 printLogMsg((char*)"sendHeartBeat, write socket error\n\r");
             }
+            printLogMsg((char*)"sendHeartBeat ...\n\r");
         }
         pthread_mutex_unlock (&mutexSerialSync);
 }
