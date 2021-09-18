@@ -492,14 +492,19 @@ void* kAutoSerialComunication(void *arg)
     }
     return NULL;
 }
-
+int iCountDelay = 0x00;
 void* kAutoHeartBeat(void *arg)
 {
     UNUSED(arg);
     while(1)
     {
-        sendHeartBeat();
-        usleep(100000);//delay for 1 second
+        if(iCountDelay > 1000)
+        {
+            sendHeartBeat();
+            iCountDelay = 0x00;
+        }
+        usleep(1000);//delay for 1 milisecond
+        iCountDelay++;
     }
     return NULL;
 }
