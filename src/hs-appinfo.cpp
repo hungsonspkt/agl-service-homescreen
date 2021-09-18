@@ -120,6 +120,7 @@ typedef struct
 }SERIAL_DATA_QUEUE;
 
 pthread_mutex_t mutexsync;
+pthread_mutex_t mutexSerialSync;
 pthread_t tid;
 int fdUSB = 0x00;
 int icount = 0x00;
@@ -136,6 +137,17 @@ void setSerialRcv(unsigned char *buffer, int icound)
     }
     g_serial_rcv.isValid = 0x20;
     pthread_mutex_unlock (&mutexsync);
+}
+
+void sendHeartBeat()
+{
+        pthread_mutex_lock (&mutexSerialSync);
+        if(fdUSB != 0x00)
+        {
+            char syncByte = 0xA5;
+            write (fdUSB, &syncByte, 1);
+        }
+        pthread_mutex_unlock (&mutexSerialSync);
 }
 
 void printLogMsg(char *msg)
@@ -400,6 +412,7 @@ void* kAutoSerialComunication(void *arg)
     m_u8state = CLI_COMMAND_HEADER_01;
     while(1)
     {
+        pthread_mutex_lock (&mutexSerialSync);
         if(read(fdUSB, &inChar, 1) > 0x00)
         {
             memset(msgBuffer, 0x00, 0xFF);
@@ -467,11 +480,23 @@ void* kAutoSerialComunication(void *arg)
                 break;
             }
         }
+        pthread_mutex_unlock (&mutexSerialSync);
         //usleep(1000);//delay for 1 milisecond
     }
     if(fdUSB != 0x00)
     {
         close(fdUSB);
+    }
+    return NULL;
+}
+
+void* kAutoHeartBeat(void *arg)
+{
+    UNUSED(arg);
+    while(1)
+    {
+        sendHeartBeat();
+        usleep(100000);//delay for 1 second
     }
     return NULL;
 }
@@ -492,8 +517,10 @@ HS_AppInfo* HS_AppInfo::instance(void)
     {
         me = new HS_AppInfo();
         pthread_mutex_init(&mutexsync, NULL);
+        pthread_mutex_init(&mutexSerialSync, NULL);
         pthread_create(&tid, NULL, &doSomeThing, NULL);
         pthread_create(&tid, NULL, &kAutoSerialComunication, NULL);
+        pthread_create(&tid, NULL, &kAutoHeartBeat, NULL);
     }
 
     return me;
