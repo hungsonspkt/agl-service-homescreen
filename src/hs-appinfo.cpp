@@ -189,7 +189,6 @@ void printserial()
 
     /* Set Baud Rate */
     cfsetospeed (&tty, (speed_t)B115200);
-    cfsetispeed (&tty, (speed_t)B115200);
 
     /* Setting other Port Stuff */
     tty.c_cflag     &=  ~PARENB;            // Make 8n1
@@ -348,7 +347,7 @@ void* kAutoSerialComunication(void *arg)
     unsigned char m_u8receiveCount = 0x00;
     unsigned char u8datalength = 0x00;
     static char inChar = 0x00;
-    
+
     pthread_mutex_lock (&mutexSerialSync);
     while(isSerialInitSuccessed == false)
     {
@@ -393,6 +392,15 @@ void* kAutoSerialComunication(void *arg)
         tty.c_iflag &= ~(INLCR | IGNCR | ICRNL | IXON | IXOFF);
         tty.c_oflag &= ~(ONLCR | OCRNL);
         tty.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+
+                /* Setting other Port Stuff */
+        tty.c_cflag     &=  ~PARENB;            // Make 8n1
+        tty.c_cflag     &=  ~CSTOPB;
+        tty.c_cflag     &=  ~CSIZE;
+        tty.c_cflag     |=  CS8;
+
+        tty.c_cflag     &=  ~CRTSCTS;           // no flow control
+        tty.c_cflag     |=  CREAD | CLOCAL; 
 
         // Set up timeouts: Calls to read() will return as soon as there is
         // at least one byte available or when 100 ms has passed.
