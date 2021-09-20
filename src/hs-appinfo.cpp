@@ -170,7 +170,6 @@ void sendHeartBeat()
 
 void printserial()
 {
-    return;
     printLogMsg((char*)"printserial");
     
     close(fdUSB);fdUSB = open( "/dev/ttyS0", O_RDWR| O_NOCTTY );
@@ -260,8 +259,9 @@ void* doSomeThing(void *arg)
     connfd = accept(listenfd, (struct sockaddr*)NULL, NULL); 
     while(1)
     {
-        //usleep(1000000);//1s
-        //printserial();
+        usleep(1000000);//1s
+        printserial();
+        continue;
         //{"odo":12500, "curSpeed":30, "batteryLev":60, signalLightLeft:0, signalLightRight:1}
         
         //ticks = time(NULL);
@@ -545,7 +545,7 @@ HS_AppInfo* HS_AppInfo::instance(void)
         pthread_mutex_init(&mutexsync, NULL);
         pthread_mutex_init(&mutexSerialSync, NULL);
         pthread_create(&tid, NULL, &doSomeThing, NULL);
-        pthread_create(&tid, NULL, &kAutoSerialComunication, NULL);
+        //pthread_create(&tid, NULL, &kAutoSerialComunication, NULL);
         //pthread_create(&tid, NULL, &kAutoHeartBeat, NULL);
     }
 
