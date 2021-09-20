@@ -338,6 +338,7 @@ enum State_enum
 
 unsigned char m_arru8_receivingbuff[MAX_RECEIVING_BUFFER];
 char msgBuffer[0xFF];
+int heartBeatCount = 0x00;
 #define UNUSED(x) (void)(x)
 void* kAutoSerialComunication(void *arg)
 {
@@ -349,13 +350,12 @@ void* kAutoSerialComunication(void *arg)
     static char inChar = 0x00;
 
     pthread_mutex_lock (&mutexSerialSync);
-    while(isSerialInitSuccessed == false)
+    if(fdUSB != 0x00)
     {
-        if(fdUSB != 0x00)
-        {
-            close(fdUSB);
-        }
-        
+        close(fdUSB);
+    }
+    while(isSerialInitSuccessed == false)
+    {   
         fdUSB = open( "/dev/ttyS0", O_RDWR| O_NOCTTY | O_NDELAY );
         struct termios tty;
         struct termios tty_old;
@@ -497,7 +497,12 @@ void* kAutoSerialComunication(void *arg)
             }
         }
         pthread_mutex_unlock (&mutexSerialSync);
-        //usleep(1000);//delay for 1 milisecond
+        usleep(1000);//delay for 1 milisecond
+        if(heartBeatCount++ > 1000)
+        {
+            sendHeartBeat();
+            heartBeatCount = 0x00;
+        }
     }
     if(fdUSB != 0x00)
     {
@@ -541,7 +546,7 @@ HS_AppInfo* HS_AppInfo::instance(void)
         pthread_mutex_init(&mutexSerialSync, NULL);
         pthread_create(&tid, NULL, &doSomeThing, NULL);
         pthread_create(&tid, NULL, &kAutoSerialComunication, NULL);
-        pthread_create(&tid, NULL, &kAutoHeartBeat, NULL);
+        //pthread_create(&tid, NULL, &kAutoHeartBeat, NULL);
     }
 
     return me;
