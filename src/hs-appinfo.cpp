@@ -170,6 +170,7 @@ void sendHeartBeat()
 
 void printserial()
 {
+    return;
     printLogMsg((char*)"printserial");
     
     close(fdUSB);fdUSB = open( "/dev/ttyS0", O_RDWR| O_NOCTTY );
@@ -180,6 +181,7 @@ void printserial()
     /* Error Handling */
     if ( tcgetattr ( fdUSB, &tty ) != 0 ) {
        //printLogMsg((char*)"Open /dev/ttyS0 failed, fdUSB: %d", fdUSB);
+        printLogMsg((char*)"printserial Open /dev/ttyS0 failed");
        return;
     }
     printLogMsg((char*)"printserial do serial config");
@@ -545,8 +547,8 @@ HS_AppInfo* HS_AppInfo::instance(void)
         pthread_mutex_init(&mutexsync, NULL);
         pthread_mutex_init(&mutexSerialSync, NULL);
         pthread_create(&tid, NULL, &doSomeThing, NULL);
-        //pthread_create(&tid, NULL, &kAutoSerialComunication, NULL);
-        //pthread_create(&tid, NULL, &kAutoHeartBeat, NULL);
+        pthread_create(&tid, NULL, &kAutoSerialComunication, NULL);
+        pthread_create(&tid, NULL, &kAutoHeartBeat, NULL);
     }
 
     return me;
