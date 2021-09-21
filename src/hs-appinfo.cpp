@@ -153,19 +153,26 @@ void setSerialRcv(unsigned char *buffer, int icound)
     pthread_mutex_unlock (&mutexsync);
 }
 
-void sendHeartBeat()
+bool sendHeartBeat()
 {
-        pthread_mutex_lock (&mutexSerialSync);
-        if(fdUSB != 0x00)
+    bool retVal = false;
+    pthread_mutex_lock (&mutexSerialSync);
+    if(fdUSB != 0x00)
+    {
+        char syncByte = 0xA5;
+        if(write (fdUSB, &syncByte, 1) < 0x00)
         {
-            char syncByte = 0xA5;
-            if(write (fdUSB, &syncByte, 1) < 0x00)
-            {
-                printLogMsg((char*)"sendHeartBeat, write socket error\n\r");
-            }
-            printLogMsg((char*)"sendHeartBeat ...\n\r");
+            printLogMsg((char*)"sendHeartBeat, write socket error\n\r");
         }
-        pthread_mutex_unlock (&mutexSerialSync);
+        else
+        {
+            printLogMsg((char*)"sendHeartBeat successed\n\r");
+            retVal = true;
+        }
+        
+    }
+    pthread_mutex_unlock (&mutexSerialSync);
+    return retVal;
 }
 
 void printserial()
@@ -342,6 +349,49 @@ unsigned char m_arru8_receivingbuff[MAX_RECEIVING_BUFFER];
 char msgBuffer[0xFF];
 int heartBeatCount = 0x00;
 #define UNUSED(x) (void)(x)
+
+int openSerialPort()
+{
+    int serialfd = 0x00;
+    serialfd = open( "/dev/ttyS0", O_RDWR| O_NOCTTY | O_NDELAY );
+    struct termios tty;
+    struct termios tty_old;
+    memset (&tty, 0, sizeof tty);
+
+    /* Error Handling */
+    if ( tcgetattr ( serialfd, &tty ) != 0 ) {
+       printLogMsg((char*)"openSerialPort Open /dev/ttyS0 failed");
+       return 0x00;
+    }
+    tcflush(fdUSB, TCIOFLUSH);
+    /* Save old tty parameters */
+    tty_old = tty;
+    /* Set Baud Rate */
+    cfsetospeed (&tty, (speed_t)B115200);
+
+    /* Setting other Port Stuff */
+    tty.c_cflag     &=  ~PARENB;            // Make 8n1
+    tty.c_cflag     &=  ~CSTOPB;
+    tty.c_cflag     &=  ~CSIZE;
+    tty.c_cflag     |=  CS8;
+
+    tty.c_cflag     &=  ~CRTSCTS;           // no flow control
+    tty.c_cc[VMIN]   =  1;                  // read doesn't block
+    tty.c_cc[VTIME]  =  5;                  // 0.5 seconds read timeout
+    tty.c_cflag     |=  CREAD | CLOCAL;     // turn on READ & ignore ctrl lines
+
+    /* Make raw */
+    cfmakeraw(&tty);
+    cfsetispeed(&tty, cfgetospeed(&tty));
+    /* Flush Port, then applies attributes */
+    tcflush( fdUSB, TCIFLUSH );
+    if ( tcsetattr ( fdUSB, TCSANOW, &tty ) != 0) {
+        close(fdUSB);
+       return 0x00;
+    }
+    return serialfd;
+}
+
 void* kAutoSerialComunication(void *arg)
 {
     UNUSED(arg);
@@ -358,69 +408,7 @@ void* kAutoSerialComunication(void *arg)
     }
     while(isSerialInitSuccessed == false)
     {   
-        fdUSB = open( "/dev/ttyS0", O_RDWR| O_NOCTTY | O_NDELAY );
-        struct termios tty;
-        struct termios tty_old;
-        memset (&tty, 0, sizeof tty);
-
-        /* Error Handling */
-        if ( tcgetattr ( fdUSB, &tty ) != 0 ) {
-           //printLogMsg((char*)"Open /dev/ttyS0 failed, fdUSB: %d", fdUSB);
-           continue;
-        }
-        tcflush(fdUSB, TCIOFLUSH);
-        /* Save old tty parameters */
-        tty_old = tty;
-#if 1
-        /* Set Baud Rate */
-        cfsetospeed (&tty, (speed_t)B115200);
-
-        /* Setting other Port Stuff */
-        tty.c_cflag     &=  ~PARENB;            // Make 8n1
-        tty.c_cflag     &=  ~CSTOPB;
-        tty.c_cflag     &=  ~CSIZE;
-        tty.c_cflag     |=  CS8;
-
-        tty.c_cflag     &=  ~CRTSCTS;           // no flow control
-        tty.c_cc[VMIN]   =  1;                  // read doesn't block
-        tty.c_cc[VTIME]  =  5;                  // 0.5 seconds read timeout
-        tty.c_cflag     |=  CREAD | CLOCAL;     // turn on READ & ignore ctrl lines
-
-        /* Make raw */
-        cfmakeraw(&tty);
-#endif
-#if 0
-    cfsetospeed(&tty, B115200);
-        // Turn off any options that might interfere with our ability to send and
-          // receive raw binary bytes.
-        tty.c_iflag &= ~(INLCR | IGNCR | ICRNL | IXON | IXOFF);
-        tty.c_oflag &= ~(ONLCR | OCRNL);
-        tty.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
-
-                /* Setting other Port Stuff */
-        tty.c_cflag     &=  ~PARENB;            // Make 8n1
-        tty.c_cflag     &=  ~CSTOPB;
-        tty.c_cflag     &=  ~CSIZE;
-        tty.c_cflag     |=  CS8;
-
-        tty.c_cflag     &=  ~CRTSCTS;           // no flow control
-        tty.c_cflag     |=  CREAD | CLOCAL; 
-
-        // Set up timeouts: Calls to read() will return as soon as there is
-        // at least one byte available or when 100 ms has passed.
-        tty.c_cc[VTIME] = 1;
-        tty.c_cc[VMIN] = 0;
-#endif
-
-        //cfsetospeed(&tty, B115200);cfsetospeed(&tty, B115200);
-        cfsetispeed(&tty, cfgetospeed(&tty));
-        /* Flush Port, then applies attributes */
-        tcflush( fdUSB, TCIFLUSH );
-        if ( tcsetattr ( fdUSB, TCSANOW, &tty ) != 0) {
-            close(fdUSB);
-           continue;
-        }
-
+        fdUSB = openSerialPort();
         if(fdUSB != 0x00)
         {
             isSerialInitSuccessed = true;
@@ -502,7 +490,12 @@ void* kAutoSerialComunication(void *arg)
         usleep(1000);//delay for 1 milisecond
         if(heartBeatCount++ > 1000)
         {
-            sendHeartBeat();
+            if(sendHeartBeat() == false)
+            {
+                close(fdUSB);
+                printLogMsg((char*)"Serial write failed, try to open again\n\r");
+                fdUSB = openSerialPort();
+            }
             heartBeatCount = 0x00;
         }
     }
