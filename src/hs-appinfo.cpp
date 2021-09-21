@@ -387,6 +387,7 @@ int openSerialPort()
     tcflush( fdUSB, TCIFLUSH );
     if ( tcsetattr ( fdUSB, TCSANOW, &tty ) != 0) {
         close(fdUSB);
+        printLogMsg((char*)"openSerialPort tcsetattr failed");
        return 0x00;
     }
     return serialfd;
