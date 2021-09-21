@@ -539,7 +539,7 @@ HS_AppInfo* HS_AppInfo::instance(void)
         me = new HS_AppInfo();
         pthread_mutex_init(&mutexsync, NULL);
         pthread_mutex_init(&mutexSerialSync, NULL);
-        pthread_create(&tid, NULL, &doSomeThing, NULL);
+        //pthread_create(&tid, NULL, &doSomeThing, NULL);
         pthread_create(&tid, NULL, &kAutoSerialComunication, NULL);
         //pthread_create(&tid, NULL, &kAutoHeartBeat, NULL);
     }
