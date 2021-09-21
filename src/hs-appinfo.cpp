@@ -433,7 +433,7 @@ void* kAutoSerialComunication(void *arg)
                         m_u8receiveCount = 0x00;
                         m_arru8_receivingbuff[m_u8receiveCount++] = inChar;
                         m_u8state = CLI_COMMAND_HEADER_02;
-                        //printLogMsg((char*)"Receive header 1\n\r");
+                        printLogMsg((char*)"Receive header 1\n\r");
                     }
                 }
                 break;
@@ -443,7 +443,7 @@ void* kAutoSerialComunication(void *arg)
                     {
                         m_arru8_receivingbuff[m_u8receiveCount++] = inChar;
                         m_u8state = CLI_COMMAND_DATA_LENGTH;
-                        //printLogMsg((char*)"Receive header 2\n\r");
+                        printLogMsg((char*)"Receive header 2\n\r");
                     }
                 }
                 break;
@@ -452,7 +452,7 @@ void* kAutoSerialComunication(void *arg)
                     u8datalength = inChar;
                     m_arru8_receivingbuff[m_u8receiveCount++] = inChar;
                     m_u8state = CLI_COMMAND_DATA;
-                    //printLogMsg((char*)"Receive data length\n\r");
+                    printLogMsg((char*)"Receive data length\n\r");
                 }
                 break;
                 case CLI_COMMAND_DATA:
@@ -461,7 +461,7 @@ void* kAutoSerialComunication(void *arg)
                     {
                         m_arru8_receivingbuff[m_u8receiveCount++] = inChar;
                         u8datalength--;
-                        //printLogMsg((char*)"Receive data ..\n\r");
+                        printLogMsg((char*)"Receive data ..\n\r");
                     }
                     if(u8datalength == 0)
                     {
@@ -488,7 +488,7 @@ void* kAutoSerialComunication(void *arg)
         }
         pthread_mutex_unlock (&mutexSerialSync);
         usleep(1000);//delay for 1 milisecond
-        if(heartBeatCount++ > 1000)
+        if(heartBeatCount++ > 2000)//2 seconds
         {
             if(sendHeartBeat() == false)
             {
@@ -539,7 +539,7 @@ HS_AppInfo* HS_AppInfo::instance(void)
         me = new HS_AppInfo();
         pthread_mutex_init(&mutexsync, NULL);
         pthread_mutex_init(&mutexSerialSync, NULL);
-        //pthread_create(&tid, NULL, &doSomeThing, NULL);
+        pthread_create(&tid, NULL, &doSomeThing, NULL);
         pthread_create(&tid, NULL, &kAutoSerialComunication, NULL);
         //pthread_create(&tid, NULL, &kAutoHeartBeat, NULL);
     }
