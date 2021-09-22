@@ -353,7 +353,8 @@ int heartBeatCount = 0x00;
 int openSerialPort()
 {
     int serialfd = 0x00;
-    serialfd = open( "/dev/ttyS0", O_RDWR| O_NOCTTY | O_NDELAY );
+    //serialfd = open( "/dev/ttyS0", O_RDWR| O_NOCTTY | O_NDELAY );
+    serialfd = open( "/dev/ttyUSB0", O_RDWR| O_NOCTTY | O_NDELAY );
     struct termios tty;
     struct termios tty_old;
     memset (&tty, 0, sizeof tty);
@@ -488,7 +489,7 @@ void* kAutoSerialComunication(void *arg)
             }
         }
         pthread_mutex_unlock (&mutexSerialSync);
-        #if 0
+        #if 1
         usleep(1000);//delay for 1 milisecond
         if(heartBeatCount++ > 2000)//2 seconds
         {
