@@ -489,7 +489,7 @@ void* kAutoSerialComunication(void *arg)
             }
         }
         pthread_mutex_unlock (&mutexSerialSync);
-        #if 1
+        #if 0
         usleep(1000);//delay for 1 milisecond
         if(heartBeatCount++ > 2000)//2 seconds
         {
