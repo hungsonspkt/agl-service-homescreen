@@ -488,6 +488,7 @@ void* kAutoSerialComunication(void *arg)
             }
         }
         pthread_mutex_unlock (&mutexSerialSync);
+        #if 0
         usleep(1000);//delay for 1 milisecond
         if(heartBeatCount++ > 2000)//2 seconds
         {
@@ -499,6 +500,7 @@ void* kAutoSerialComunication(void *arg)
             }
             heartBeatCount = 0x00;
         }
+        #endif
     }
     if(fdUSB != 0x00)
     {
